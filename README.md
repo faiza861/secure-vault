@@ -39,6 +39,29 @@ The launcher (`start.py`) only listens on your own computer, creates a private `
 The public live demo (Vercel + Neon free tier) is limited to small files because those free platforms cap request
 sizes. For anything you care about, run it locally. Do not put real secrets in a shared demo.
 
+## Screenshots
+
+**1. Create a vault.** Choose a passphrase of at least 10 characters. It cannot be recovered.
+
+![Create vault screen](docs/images/01-create-vault.png)
+
+**2. Unlock.** A dialog asks for the passphrase (and a 6-digit code if two-step verification is on).
+
+![Unlock dialog](docs/images/02-unlock-dialog.png)
+
+**3. Use the vault.** Add files, see their names, download or delete them. Every file is encrypted with its own key.
+
+![Unlocked vault](docs/images/03-unlocked-vault.png)
+
+**4. Locked view.** While locked, file names stay hidden ("encrypted name"), so even the file list reveals nothing.
+
+![Locked vault showing encrypted file names](docs/images/05-locked-encrypted-names.png)
+
+**5. Access protection.** Live status of two-step verification, the session timer, failed attempts and lockout, next to
+key version, audit-chain check and AI model status.
+
+![Security dashboard with Access protection](docs/images/04-access-protection.png)
+
 ## How it works (one picture)
 
 ```mermaid
