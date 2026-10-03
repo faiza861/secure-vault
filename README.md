@@ -1,5 +1,9 @@
 # Secure Vault
 
+[![CI](https://github.com/faiza861/secure-vault/actions/workflows/ci.yml/badge.svg)](https://github.com/faiza861/secure-vault/actions/workflows/ci.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![Free and open-source stack](https://img.shields.io/badge/stack-free%20%26%20open%20source-brightgreen)
+
 A personal file vault that encrypts files with **AES-256-GCM**, protects every file key with the
 **post-quantum ML-KEM-768** algorithm, records every action in a **tamper-evident hash-chained audit log**,
 and watches access patterns with an **Isolation Forest AI model** plus fixed rules.
