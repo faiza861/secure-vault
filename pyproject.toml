@@ -7,6 +7,20 @@ name = "securevault"
 version = "0.1.0"
 description = "Post-quantum encrypted personal file vault with a tamper-evident audit log and AI anomaly detection"
 requires-python = ">=3.11"
+# Runtime libraries. Keep this list identical to requirements.txt (a test enforces it). Hosting platforms such as
+# Vercel read this list when a pyproject.toml is present, so it must not be empty.
+dependencies = [
+    "cryptography>=43",
+    "argon2-cffi>=23",
+    "kyber-py>=1.0",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "typer>=0.12",
+    "pydantic-settings>=2.2",
+    "python-multipart>=0.0.9",
+    "psycopg[binary]>=3.1",
+    "segno>=1.6",
+]
 
 [project.scripts]
 securevault = "securevault.cli.main:app"

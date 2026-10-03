@@ -1,5 +1,12 @@
 # Changelog
 
+## Deployment fix
+
+### Fixed
+- `pyproject.toml` now lists the runtime dependencies (same as `requirements.txt`). Before, it listed none, so a
+  platform that reads `pyproject.toml` (such as Vercel) could install nothing and the app failed to start.
+- `tests/unit/test_dependencies_in_sync.py` keeps the two lists identical.
+
 ## Easy start (no change to the app itself)
 
 ### Added
