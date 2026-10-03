@@ -1,0 +1,11 @@
+# Runtime dependencies (CLI + API). Kept small so the Vercel function bundle stays under its size limit.
+cryptography>=43
+argon2-cffi>=23
+kyber-py>=1.0
+fastapi>=0.110
+uvicorn>=0.29
+typer>=0.12
+pydantic-settings>=2.2
+python-multipart>=0.0.9
+psycopg[binary]>=3.1
+segno>=1.6  # pure-Python QR code (SVG) for MFA enrollment; no other dependencies

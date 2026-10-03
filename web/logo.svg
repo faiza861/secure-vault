@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Secure Vault logo">
+  <title>Secure Vault</title>
+  <path d="M24 3 6 10v13c0 11 7.6 19.2 18 22 10.4-2.8 18-11 18-22V10L24 3Z" fill="#1d3f8f"/>
+  <path d="M24 3 6 10v13c0 11 7.6 19.2 18 22V3Z" fill="#2a56b8"/>
+  <circle cx="24" cy="23" r="9" fill="none" stroke="#ffffff" stroke-width="2.4"/>
+  <circle cx="24" cy="23" r="2.6" fill="#ffffff"/>
+  <path d="M24 14v4M24 28v4M15 23h4M29 23h4" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

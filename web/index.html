@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Secure Vault</title>
+<meta name="theme-color" content="#f4f6f9">
+<link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
+<link rel="stylesheet" href="/assets/style.css">
+<!-- Blocking on purpose (no defer): applies the saved theme before first paint. External file because the CSP forbids inline scripts. -->
+<script src="/assets/theme.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <img src="/assets/logo.svg" alt="" width="36" height="36">
+    <div><h1>Secure Vault</h1><small>Encrypted document storage with audited access</small></div>
+  </div>
+  <div class="top-right">
+    <p id="chip" class="chip">Checking vault…</p>
+    <div id="theme-toggle" class="seg" role="group" aria-label="Colour theme">
+      <button type="button" data-theme-choice="system" aria-pressed="true" title="Follow the device setting">System</button>
+      <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="vault" aria-selected="true">Vault</button>
+  <button role="tab" data-tab="security" aria-selected="false">Security dashboard</button>
+  <button role="tab" data-tab="stack" aria-selected="false">Security stack</button>
+</nav>
+
+<main>
+<p id="msg" class="msg" role="status" hidden></p>
+
+<!-- ============ VAULT ============ -->
+<section id="tab-vault" class="panel">
+  <div id="setup" class="card" hidden>
+    <h2>Create your vault</h2>
+    <p class="muted">Choose a passphrase of at least <span id="minlen">10</span> characters. It cannot be recovered, so store it safely (for example in an organisation-approved password manager).</p>
+    <label class="sr" for="init-pass">New passphrase</label>
+    <div class="row"><input id="init-pass" type="password" autocomplete="new-password" placeholder="New passphrase">
+    <button id="init-btn" class="primary">Create vault</button></div>
+  </div>
+
+  <div id="main-vault" hidden>
+    <div class="card" id="access-card">
+      <div class="row between">
+        <div>
+          <h2>Vault access</h2>
+          <p id="lock-state" class="muted">Locked. Sign in to add files, see file names and download.</p>
+        </div>
+        <div class="row">
+          <button id="open-unlock" type="button" class="primary">Unlock vault</button>
+          <button id="signout-btn" type="button" hidden>Sign Out</button>
+        </div>
+      </div>
+      <p class="muted small">Your passphrase is kept only in this browser tab's memory. It is cleared when you sign out and after 5 minutes without activity.</p>
+    </div>
+
+    <div class="card" id="upload-card" hidden>
+      <h2>Add a file</h2>
+      <label id="drop" class="drop" tabindex="0">
+        <input id="file" type="file" hidden>
+        <span>Drop a file here or choose one</span>
+      </label>
+      <p class="muted">Encrypted with AES-256-GCM; its key is wrapped with ML-KEM-768. Limit: <span id="maxsize"></span>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Files</h2>
+      <p id="empty" class="muted" hidden>No files yet.</p>
+      <div class="scroll"><table id="files"><thead><tr><th>Name</th><th>Size</th><th>Key</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECURITY ============ -->
+<section id="tab-security" class="panel" hidden>
+  <ul id="posture" class="posture" aria-label="Security posture"></ul>
+
+  <div class="card" id="access-protection">
+    <div class="row between"><h2>Access protection</h2>
+      <div class="row"><button id="reauth-btn" type="button">Re-authenticate</button><button id="signout2-btn" type="button">Sign Out</button></div></div>
+    <dl class="facts">
+      <div><dt>Two-step verification</dt><dd id="ap-mfa">Locked</dd></div>
+      <div><dt>Session</dt><dd id="ap-session">No active session</dd></div>
+      <div><dt>Last authentication</dt><dd id="ap-last">–</dd></div>
+      <div><dt>Failed attempts (current window)</dt><dd id="ap-fails">–</dd></div>
+      <div><dt>Lockout</dt><dd id="ap-lock">–</dd></div>
+    </dl>
+    <p id="ap-note" class="muted small">Sign in to see the two-step verification state.</p>
+  </div>
+
+  <div class="card" id="mfa-card">
+    <h2>Two-step verification (authenticator app)</h2>
+    <p class="muted">Adds a 6-digit code from an authenticator app before sensitive actions: download, delete, key rotation, passphrase change and scans. It slows online guessing; it is not a defence against a stolen disk or against a convincing fake login page.</p>
+    <div id="mfa-locked" class="muted">Unlock the vault to manage two-step verification.</div>
+    <div id="mfa-off" hidden><button id="mfa-enable" type="button" class="primary">Enable two-step verification</button></div>
+    <div id="mfa-setup" hidden>
+      <ol class="muted">
+        <li>Scan this QR code with an authenticator app, or type the key by hand.</li>
+        <li>Enter the 6-digit code the app shows to confirm.</li>
+      </ol>
+      <div class="qr"><img id="mfa-qr" alt="QR code for the authenticator app" width="180" height="180" hidden></div>
+      <p class="muted small">Manual key (shown only now): <code id="mfa-key" class="key"></code></p>
+      <p id="mfa-uri-wrap" class="muted small" hidden>Setup link: <code id="mfa-uri"></code></p>
+      <div class="row">
+        <label class="sr" for="mfa-confirm-code">6-digit code</label>
+        <input id="mfa-confirm-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code">
+        <button id="mfa-confirm" type="button" class="primary">Confirm and enable</button>
+        <button id="mfa-cancel" type="button">Cancel</button>
+      </div>
+    </div>
+    <div id="mfa-on" hidden>
+      <p class="badge">Enabled</p>
+      <div class="row"><button id="mfa-disable" type="button" class="danger">Disable two-step verification</button></div>
+    </div>
+    <p id="mfa-msg" class="msg" role="status" hidden></p>
+  </div>
+
+  <div class="card">
+    <h2>Audit chain</h2>
+    <p id="chain-badge" class="badge">–</p>
+    <p class="muted">Head hash (save it elsewhere to detect truncation): <code id="head">–</code></p>
+  </div>
+
+  <div class="card">
+    <div class="row between"><h2>AI and rule alerts</h2><button id="scan-btn">Run scan</button></div>
+    <p id="scan-note" class="muted">Rules catch known bad patterns. The Isolation Forest model flags unusual behaviour the rules do not cover.</p>
+    <ul id="alerts" class="alerts"></ul>
+  </div>
+
+  <div class="card">
+    <h2>Key management</h2>
+    <p class="muted">Rotation changes keys without re-encrypting your files. Both need your passphrase from the Vault tab.</p>
+    <div class="row">
+      <button id="rot-keys">Rotate ML-KEM keys</button>
+      <input id="new-pass" type="password" autocomplete="new-password" placeholder="New passphrase">
+      <button id="rot-pass">Change passphrase</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Recent activity</h2>
+    <div class="scroll"><table id="audit"><thead><tr><th>#</th><th>Time</th><th>Event</th><th>Hash</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============ STACK ============ -->
+<section id="tab-stack" class="panel" hidden>
+  <div class="card">
+    <h2>How your file is protected</h2>
+    <p class="muted">Each step is tagged by the kind of technique it uses.</p>
+    <div class="counts">
+      <div class="count cl"><b>5</b>Classical</div><div class="count pq"><b>1</b>Post-quantum</div><div class="count ai"><b>1</b>AI model</div>
+    </div>
+    <ol class="steps">
+      <li class="cl"><b>Argon2id</b> <span class="tag">Classical</span><br><span class="muted">Turns your passphrase into the key-encryption key. Memory-hard, so guessing is slow.</span></li>
+      <li class="pq"><b>ML-KEM-768 (Kyber)</b> <span class="tag">Post-quantum</span><br><span class="muted">NIST FIPS 203. Every file key is wrapped to the vault's ML-KEM public key, protecting stored files against "harvest now, decrypt later" quantum attacks. HKDF-SHA256 turns the shared secret into the wrapping key.</span></li>
+      <li class="cl"><b>AES-256-GCM</b> <span class="tag">Classical</span><br><span class="muted">Encrypts each file and its name under its own random key, and detects any modification.</span></li>
+      <li class="cl"><b>SHA-256</b> <span class="tag">Classical</span><br><span class="muted">Fingerprints each stored ciphertext so corruption or swapping is caught before decryption.</span></li>
+      <li class="cl"><b>Hash-chained audit log</b> <span class="tag">Classical</span><br><span class="muted">Every action links to the hash of the previous one, so editing history breaks the chain.</span></li>
+      <li class="ai"><b>Isolation Forest</b> <span class="tag">AI model</span><br><span class="muted">Learns what normal access looks like (hour, request rate, data volume, failed unlocks, files touched) and flags outliers. Alerts are written into the audit chain.</span></li>
+    </ol>
+    <p class="muted">Post-quantum means resistant to quantum computers. It runs on ordinary hardware. This demo uses a pure-Python ML-KEM and an AI model trained on simulated logs.</p>
+  </div>
+  <div class="card warn">
+    <h2>Hosted mode is not zero-knowledge</h2>
+    <p class="muted">In this web app the server does the decryption, so it briefly handles your passphrase and file while serving a request. Use HTTPS only. For fully local encryption use the command-line tool.</p>
+  </div>
+</section>
+</main>
+<dialog id="unlock-dlg" aria-labelledby="unlock-title">
+  <form id="unlock-form" method="dialog" novalidate>
+    <h2 id="unlock-title">Unlock vault</h2>
+    <p class="muted small">Enter your passphrase. If two-step verification is on you will be asked for a code next.</p>
+    <label for="unlock-pass">Passphrase</label>
+    <input id="unlock-pass" type="password" autocomplete="current-password" maxlength="256" required>
+    <div id="unlock-code-wrap" hidden>
+      <label for="unlock-code">6-digit authenticator code</label>
+      <input id="unlock-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}">
+    </div>
+    <p id="unlock-msg" class="msg" role="status" hidden></p>
+    <div class="row end"><button id="unlock-cancel" type="button">Cancel</button><button id="unlock-submit" type="submit" class="primary">Unlock</button></div>
+  </form>
+</dialog>
+
+<dialog id="code-dlg" aria-labelledby="code-title">
+  <form id="code-form" method="dialog" novalidate>
+    <h2 id="code-title">Confirm with your authenticator</h2>
+    <p id="code-why" class="muted small">This action needs a current 6-digit code. Each code works once, so wait for a new one if you just used it.</p>
+    <label for="code-input">6-digit authenticator code</label>
+    <input id="code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}">
+    <p id="code-msg" class="msg" role="status" hidden></p>
+    <div class="row end"><button id="code-cancel" type="button">Cancel</button><button id="code-submit" type="submit" class="primary">Continue</button></div>
+  </form>
+</dialog>
+
+<script src="/assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "securevault"
+version = "0.1.0"
+description = "Post-quantum encrypted personal file vault with a tamper-evident audit log and AI anomaly detection"
+requires-python = ">=3.11"
+
+[project.scripts]
+securevault = "securevault.cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# B008: Typer/FastAPI declare options as call defaults by design, and our dataclass defaults are frozen.
+ignore = ["B008"]

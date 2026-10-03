@@ -1,0 +1,14 @@
+.venv/
+venv/
+.venv-*/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.vercel/
+.env
+*.key
+data/vault/*
+!data/vault/.gitkeep
+data/sim_logs.jsonl
