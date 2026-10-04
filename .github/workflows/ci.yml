@@ -1,5 +1,8 @@
 name: CI
 on: [push, pull_request]
+# Least privilege: the tests only need to read the code.
+permissions:
+  contents: read
 jobs:
   test:
     strategy:

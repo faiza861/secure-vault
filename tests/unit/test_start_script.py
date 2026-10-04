@@ -7,7 +7,7 @@ import start
 
 def test_old_python_gets_a_friendly_message():
     message = start.check_python((3, 10, 9))
-    assert message and "3.11" in message and "python.org" in message
+    assert message and "3.11" in message and "Install" in message
     assert start.check_python((3, 11, 0)) is None
     assert start.check_python((3, 13, 1)) is None
 
