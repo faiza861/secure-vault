@@ -1,6 +1,7 @@
 # Threat model
 
 ## What we protect
+
 File contents and file names; the integrity of stored data; the integrity of the activity history.
 
 ## Adversaries and what happens

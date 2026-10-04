@@ -2,7 +2,7 @@
 
 Reproduce with:
 
-```
+```text
 python -m securevault.monitor.train
 python scripts/evaluate_detector.py
 ```

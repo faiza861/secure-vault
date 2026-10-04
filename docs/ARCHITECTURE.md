@@ -19,7 +19,7 @@ Dependency direction: interfaces -> `storage/vault` -> (`core`, `audit`, `monito
 
 ## Key hierarchy (envelope encryption)
 
-```
+```text
 passphrase --Argon2id (salt, t=3, m=64 MiB, p=4)--> KEK
 KEK --AES-256-GCM--> ML-KEM-768 secret key        (kept in keystore, encrypted)
 ML-KEM-768 public key --encapsulate + HKDF-SHA256--> wrap key --AES-256-GCM--> DEK (one per file)
