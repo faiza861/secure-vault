@@ -55,7 +55,7 @@ def test_theme_css_structure():
 def test_required_ui_pieces_exist():
     for needle in ('id="unlock-dlg"', 'id="code-dlg"', 'id="posture"', 'id="access-protection"', 'id="mfa-card"',
                    'autocomplete="one-time-code"', 'inputmode="numeric"', 'maxlength="6"', 'role="status"',
-                   'id="reauth-btn"', 'id="signout-btn"', 'data-theme-choice="system"', 'name="theme-color"'):
+                   'id="reauth-btn"', 'id="signout-btn"', 'id="demo-banner"', 'data-theme-choice="system"', 'name="theme-color"'):
         assert needle in HTML, needle
     assert (WEB / "logo.svg").exists() and "<script" not in (WEB / "logo.svg").read_text().lower()
     assert "http" not in re.sub(r'xmlns="http://www.w3.org/2000/svg"', "", (WEB / "logo.svg").read_text())

@@ -83,3 +83,9 @@ class SessionExpired(SecureVaultError):
     def __init__(self, reason: str = "expired") -> None:
         super().__init__("session expired")
         self.reason = reason  # "idle" or "absolute"; used for the audit log only
+
+
+class DemoRestricted(SecureVaultError):
+    """This action is switched off in the shared public demo (DEMO_MODE)."""
+
+    code = "demo_restricted"

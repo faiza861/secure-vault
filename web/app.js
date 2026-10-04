@@ -211,6 +211,14 @@ async function loadStatus() {
   $("main-vault").hidden = !status.initialized;
   $("minlen").textContent = status.min_passphrase_length;
   $("maxsize").textContent = fmtSize(status.max_upload_bytes);
+  // Public demo: show the notice and switch off the actions the server refuses anyway (see api/main.py block_in_demo)
+  const demo = Boolean(status.demo_mode);
+  $("demo-banner").hidden = !demo;
+  for (const id of ["mfa-enable", "rot-pass", "new-pass"]) {
+    const el = $(id);
+    el.disabled = demo;
+    el.title = demo ? "Switched off in the shared public demo" : "";
+  }
   renderAll();
 }
 

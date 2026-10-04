@@ -36,6 +36,7 @@ from securevault.security.lockout import check_lockout, failures_in_window, poli
 from securevault.storage import make_backend
 from securevault.storage.vault import FileInfo, Vault
 from securevault.utils.exceptions import (
+    DemoRestricted,
     FileNotFound,
     IntegrityError,
     InvalidMfaCode,
@@ -65,6 +66,7 @@ _STATUS = {
     SessionExpired: (401, "Session expired. Sign in again."),
     SessionInvalid: (401, "Session not valid. Sign in again."),
     MfaAlreadyEnabled: (409, "MFA is already enabled."),
+    DemoRestricted: (403, "Switched off in the shared public demo. Run Secure Vault locally to try this."),
     FileNotFound: (404, "File not found."),
     VaultNotInitialized: (409, "No vault yet. Create one first."),
     VaultAlreadyInitialized: (409, "A vault already exists."),
@@ -87,6 +89,13 @@ def _qr_data_uri(uri: str) -> str | None:
     except ImportError:
         return None
     return segno.make(uri, error="m").svg_data_uri(scale=5, border=2, dark="#000000", light="#ffffff")
+
+
+def block_in_demo() -> None:
+    """In the shared public demo, refuse actions that would lock every visitor out of the one shared vault.
+    Runs BEFORE any passphrase or code is looked at, so nothing is processed. No effect unless DEMO_MODE=true."""
+    if get_settings().demo_mode:
+        raise DemoRestricted("disabled in demo")
 
 
 def create_app(clock: Callable[[], float] | None = None) -> FastAPI:
@@ -166,6 +175,7 @@ def create_app(clock: Callable[[], float] | None = None) -> FastAPI:
                "max_upload_bytes": settings.max_upload_bytes,
                "min_passphrase_length": settings.min_passphrase_length,
                "kem": "ML-KEM-768", "kdf": "Argon2id", "cipher": "AES-256-GCM",
+               "demo_mode": settings.demo_mode,
                "lockout_policy": policy.to_public_dict(),
                "session_policy": {"ttl_seconds": settings.session_ttl_seconds,
                                   "idle_seconds": settings.session_idle_seconds,
@@ -260,6 +270,7 @@ def create_app(clock: Callable[[], float] | None = None) -> FastAPI:
 
     @app.post("/api/mfa/enroll")
     def mfa_enroll(body: PassphraseRequest, request: Request):
+        block_in_demo()
         r = auth(request, body.passphrase, sensitive=False)
         secret, uri = r.vault.mfa_begin_enrollment()  # persists nothing
         payload = {"secret": secret, "uri": uri, "qr": _qr_data_uri(uri)}
@@ -267,12 +278,14 @@ def create_app(clock: Callable[[], float] | None = None) -> FastAPI:
 
     @app.post("/api/mfa/confirm")
     def mfa_confirm(body: MfaConfirmRequest, request: Request):
+        block_in_demo()
         r = auth(request, body.passphrase, sensitive=False)
         r.vault.mfa_confirm_enrollment(body.secret.upper(), body.code)
         return done(request, {"ok": True})
 
     @app.post("/api/mfa/disable")
     def mfa_disable(body: MfaDisableRequest, request: Request):
+        block_in_demo()
         # Always needs a fresh code (a session is not enough to remove the second factor).
         r = auth(request, body.passphrase, sensitive=False)
         r.vault.mfa_disable(body.totp_code)
@@ -320,6 +333,7 @@ def create_app(clock: Callable[[], float] | None = None) -> FastAPI:
     # ------------------------------------------------------------- rotation
     @app.post("/api/rotate/passphrase")
     def rotate_passphrase(body: RotatePassphraseRequest, request: Request):
+        block_in_demo()
         r = auth(request, body.passphrase, body.totp_code, sensitive=True)
         r.vault.rotate_passphrase(body.new_passphrase)
         return done(request, {"ok": True})

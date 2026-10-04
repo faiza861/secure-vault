@@ -173,6 +173,20 @@ python demos\weak_hash_md5.py     # MD5 vs SHA-256 vs Argon2id
 python demos\rsa_vs_mlkem.py      # RSA vs ML-KEM: sizes, speed, quantum threat
 ```
 
+## Running a shared public demo
+
+A public demo is one vault that every visitor shares. To stop a curious visitor from locking everyone out (by
+changing the passphrase or switching on two-step verification), set these in Vercel under **Environment Variables**:
+
+| Name | Value | Why |
+| --- | --- | --- |
+| `DEMO_MODE` | `true` | Turns off passphrase change and two-step verification setup; shows a notice on the page |
+| `MAX_UPLOAD_BYTES` | `1048576` | Limits each upload to 1 MB so the free database does not fill up |
+
+Visitors can still add, list, download and delete files, rotate keys, run the security scan and view the audit chain.
+`DEMO_MODE` is off by default and changes nothing on a normal install. If someone makes a mess, empty the demo in Neon's
+SQL Editor with `TRUNCATE sv_files, sv_keystore, sv_audit;` and create the vault again.
+
 ## Deploy for free (GitHub + Vercel + Neon)
 
 1. Push this repo to GitHub (private is fine).

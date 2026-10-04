@@ -1,5 +1,18 @@
 # Changelog
 
+## Public demo mode
+
+### Added
+
+- `DEMO_MODE` setting (off by default). When `true`, the API refuses passphrase change and two-step verification
+  setup/removal with HTTP 403 `demo_restricted` before looking at any credentials, `/api/status` reports `demo_mode`,
+  and the page shows a notice and disables those controls.
+- `tests/integration/test_demo_mode.py`, README section "Running a shared public demo", `.env.example` entry.
+
+### Unchanged
+
+- With `DEMO_MODE` off (the default) behaviour is identical to before. Crypto, audit chain and `models/` are untouched.
+
 ## Deployment fix
 
 ### Fixed

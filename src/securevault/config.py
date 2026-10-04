@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     rate_limit_global_max_failures: int = Field(default=20, ge=1)  # backstop across all actors
     lockout_max_seconds: int = Field(default=900, ge=1)  # hard cap, so the owner is never locked out for good
 
+    # Public-demo mode (DEMO_MODE=true): turns off the few actions that would lock every visitor out of a SHARED
+    # vault (changing the passphrase, setting up or removing two-step verification). Off by default: no effect.
+    demo_mode: bool = False
+
     # Short-lived sessions (see security/session.py). SESSION_SECRET signs the tokens; it comes ONLY from the
     # environment. Unset or shorter than 32 chars -> a random per-process secret is used (sessions then do not
     # survive a restart or work across serverless instances; that fails closed, it never weakens anything).

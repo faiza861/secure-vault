@@ -52,3 +52,10 @@ File contents and file names; the integrity of stored data; the integrity of the
   real usage. See `docs/EVALUATION.md`.
 * **A single passphrase protects everything.** Losing it means losing the data; there is no recovery.
 * Optional TOTP MFA and short sessions now exist, but there is no multi-user access control and no secure deletion on disk.
+
+## Shared public demo
+
+A demo deployment shares one vault between all visitors, so it is not a place for real data. `DEMO_MODE=true` removes
+the actions that would lock everyone out (passphrase change, two-step verification). Visitors can still see each
+other's files, fill storage up to the upload limit, and lock the demo for a short time with wrong attempts; the
+operator can reset it from the database console.
