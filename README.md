@@ -22,22 +22,39 @@ authenticator app) before sensitive actions.
 > This is a learning and portfolio project. It is built with real, standard techniques, but it has **not** been
 > independently audited or certified. See [Limitations](#limitations) before trusting it with anything critical.
 
-<!-- Live demo: add your deployed link here, for example: **[Open the live demo](https://your-app.vercel.app)** -->
+**[Open the live demo](https://secure-vault-omega-one.vercel.app)**: a shared demo that takes small files only. Don't upload anything real.
+
+Demo passphrase: `hello-pickle`
 
 ## Try it: choose your way
 
-| You are... | Do this | Result |
+| I want to... | Use | Why |
 | --- | --- | --- |
-| **Just looking** | Read this page and the screenshots/demo video if present | Understand what it does in 2 minutes |
-| **Non-technical, want to try it** | Install [Python](https://www.python.org/downloads/) (tick "Add python.exe to PATH"), then **double-click `Start-SecureVault.bat`** (Windows) or run `sh start.sh` (macOS/Linux) | The app opens in your browser. Files stay on your own computer. |
-| **Developer** | Follow [manual setup](#for-developers-manual-setup-windows-powershell) below, run the tests, read `docs/` | Full control, CLI, tests |
+| Look around and click every feature | **[Live demo](https://secure-vault-omega-one.vercel.app)** (shared, fake files only) | Nothing to install |
+| Store real files | **Run it on my own computer** | Files and passphrase never leave my machine |
+| Read or change the code | **Developer setup** ([below](#for-developers-manual-setup-windows-powershell)) | Tests, CLI, full control |
 
-The first start downloads the libraries (1 to 3 minutes, needs internet). After that it starts in seconds.
+**Run it on your own computer (no coding needed):** install [Python](https://www.python.org/downloads/) (tick
+"Add python.exe to PATH"), download this repository (**Code**, then **Download ZIP**), unzip it, and
+**double-click `Start-SecureVault.bat`** (Windows) or run `sh start.sh` (macOS/Linux). The app opens in your browser.
+The first start downloads the libraries (1 to 3 minutes, needs internet); after that it starts in seconds.
 The launcher (`start.py`) only listens on your own computer, creates a private `.venv` folder, writes a local
 `.env` settings file with a random secret, and never changes the app's code or your stored files.
 
-The public live demo (Vercel + Neon free tier) is limited to small files because those free platforms cap request
-sizes. For anything you care about, run it locally. Do not put real secrets in a shared demo.
+**About the live demo:** it is one vault shared by every visitor, running on free hosting (Vercel + Neon), so
+uploads are limited to 1 MB, everyone can see the same files, and changing the passphrase and two-step verification
+are switched off so nobody can lock others out. Use it with fake files only. To try those two features, or to keep
+real files, run the app on your own computer.
+
+### A five-minute tour of the live demo
+
+1. Open the demo and click **Unlock vault**. Enter the demo passphrase above.
+2. Upload a small file, then download it again.
+3. Click **Sign Out**. The file list now shows "encrypted name": names stay hidden while the vault is locked.
+4. Unlock again and open the **Security dashboard**. Check the audit chain says "Verified".
+5. Click **Run scan** to see the AI and rule alerts.
+6. Optional: enter one wrong passphrase to watch the failed-attempt counter. Please do not repeat it: after 5 wrong
+   attempts the demo pauses for about a minute for everyone.
 
 ## Screenshots
 
@@ -89,6 +106,8 @@ flowchart LR
 | Hash chain | A log where each entry fingerprints the previous one, so changes show |
 | TOTP / MFA | A 6-digit code from an authenticator app that changes every 30 seconds |
 | Lockout | A temporary pause after too many wrong attempts, to stop guessing |
+
+### Techniques used
 
 | Role | Technique |
 | --- | --- |
@@ -153,7 +172,7 @@ Interactive API docs are at `/docs`.
 
 New settings (all optional, see `.env.example`): `RATE_LIMIT_MAX_FAILURES`, `RATE_LIMIT_WINDOW_SECONDS`,
 `LOCKOUT_SECONDS`, `RATE_LIMIT_GLOBAL_MAX_FAILURES`, `LOCKOUT_MAX_SECONDS`, `SESSION_SECRET`, `SESSION_TTL_SECONDS`,
-`SESSION_IDLE_SECONDS`, `REAUTH_WINDOW_SECONDS`. Set `SESSION_SECRET` to a long random value in hosted deployments.
+`SESSION_IDLE_SECONDS`, `REAUTH_WINDOW_SECONDS`, `MAX_UPLOAD_BYTES`, `DEMO_MODE`. Set `SESSION_SECRET` to a long random value in hosted deployments.
 
 ### Train and evaluate the AI model
 
@@ -189,14 +208,27 @@ SQL Editor with `TRUNCATE sv_files, sv_keystore, sv_audit;` and create the vault
 
 ## Deploy for free (GitHub + Vercel + Neon)
 
-1. Push this repo to GitHub (private is fine).
-2. Create a free Postgres database at neon.com and copy its connection string.
-3. Import the repo in Vercel (Hobby plan). Set environment variables:
-   `STORAGE_BACKEND=postgres`, `DATABASE_URL=<neon string>`, and optionally `TZ_OFFSET_HOURS`.
-4. Deploy. `api/index.py` exposes the FastAPI app; `vercel.json` includes the `web/`, `models/` and `src/` folders.
+The live demo above runs on this setup (Vercel Hobby plan and Neon free tier).
 
-The Vercel deployment config could not be tested from the development environment, so treat the first deploy as
-something to verify (check the function logs if the page does not load).
+1. Push this repo to GitHub.
+2. Create a free Postgres database at neon.com. In **Connect**, turn on **Show password**, copy the connection string,
+   and make sure it is one line ending in `?sslmode=require`.
+3. Import the repo in Vercel. Under **Environment Variables** set:
+
+   | Name | Value |
+   | --- | --- |
+   | `STORAGE_BACKEND` | `postgres` |
+   | `DATABASE_URL` | the Neon string from step 2 |
+   | `SESSION_SECRET` | a long random value (`python -c "import secrets; print(secrets.token_urlsafe(48))"`) |
+   | `TZ_OFFSET_HOURS` | your UTC offset in hours (optional) |
+
+4. Deploy. `api/index.py` exposes the FastAPI app; `vercel.json` includes the `web/`, `models/` and `src/` folders.
+   Dependencies come from `pyproject.toml`, which must list the same libraries as `requirements.txt` (a test checks this).
+5. For a public demo, also set `DEMO_MODE` and `MAX_UPLOAD_BYTES` (see above), then create the vault yourself straight
+   away, because the first visitor to an empty deployment can create it.
+
+Never put the Neon string or `SESSION_SECRET` in the repository or in a chat. If the page shows "Request failed",
+open the project's **Logs** in Vercel; a `ProgrammingError` or `OperationalError` points to the `DATABASE_URL` value.
 
 ## Project layout
 
@@ -214,3 +246,15 @@ docs/             architecture, threat model, evaluation
 
 Pure-Python ML-KEM (not side-channel hardened), AI trained on simulated logs, best-effort lockout across serverless
 instances, TOTP MFA that is not phishing-resistant, a single passphrase for everything. The full list is in `docs/THREAT_MODEL.md`.
+
+## What if I forget my passphrase?
+
+It cannot be recovered. This is deliberate: there is no backup key and no reset link, so nobody, including the
+developer, can open your files without it. Store it in a password manager. If it is lost, close the app, delete the
+`data/vault` folder and create a new vault; the old encrypted files are gone for good. A vault on one computer has no
+link to anyone else's vault or to the live demo.
+
+## Licence and author
+
+Released under the MIT licence (see `LICENSE`). Built by [@faiza861](https://github.com/faiza861) as an Information
+Security midterm project.
