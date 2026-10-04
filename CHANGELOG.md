@@ -1,5 +1,12 @@
 # Changelog
 
+## Security policy
+
+### Added
+
+- `SECURITY.md`: supported versions, private reporting steps, scope, response expectations and rules for testing the demo.
+- CI workflow now declares read-only permissions; a test no longer uses a URL substring check (CodeQL findings).
+
 ## Public demo mode
 
 ### Added

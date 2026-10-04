@@ -213,6 +213,10 @@ docs/             architecture, threat model, evaluation, deployment
 Pure-Python ML-KEM (not side-channel hardened), AI trained on simulated logs, best-effort lockout across serverless
 instances, TOTP MFA that is not phishing-resistant, a single passphrase for everything. The full list is in `docs/THREAT_MODEL.md`.
 
+## Reporting a security problem
+
+Please report vulnerabilities privately; see [SECURITY.md](SECURITY.md).
+
 ## What if I forget my passphrase?
 
 It cannot be recovered. This is deliberate: there is no backup key and no reset link, so nobody, including the
